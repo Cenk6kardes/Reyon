@@ -1,0 +1,42 @@
+<p-panel [header]="head" class="px-3">
+    <p-table #dt datakey="id" [globalFilterFields]="['id','type','products']" [columns]="columns" [value]="rayon"
+        stripedRows showGridlines [tableStyle]="{ 'width':'52rem' }">
+        <ng-template #header let-columns>
+            <tr>
+                <th *ngFor="let col of columns">
+                    {{ col.header }}
+                </th>
+                <th><p-button label="Reyon Ekle" severity="secondary" (onClick)="openAddRayonModal()" /></th>
+            </tr>
+        </ng-template>
+        <ng-template #body let-rowData let-columns="columns">
+            <tr>
+                <td *ngFor="let col of columns">
+                    <span class="flex justify-content-center  align-items-center" *ngIf="col.field ==='id'">
+                        <span>R{{ rowData[col.field]+1 }}</span>
+                        <p-button *ngIf="rowData[col.field] !== 0" icon="pi pi-trash" [text]="true" severity="danger"
+                            (onClick)="deleteRayon($event,rowData.id)" />
+                    </span>
+                    <span *ngIf="col.field ==='type'">{{productTypes[rowData[col.field]]}}</span>
+                    <div *ngIf="col.field ==='products'" class="flex flex-wrap gap-1">
+                        <span *ngFor="let product of rowData.products">
+                            <p-button (onClick)="openEditProductModal(product)" [label]="product.title" [rounded]="true"
+                                severity="success" />
+                        </span>
+                    </div>
+                </td>
+                <td>
+                    <p-button label="Ürün Ekle" severity="info" (onClick)="openAddProductModal(rowData)" />
+                </td>
+            </tr>
+        </ng-template>
+    </p-table>
+</p-panel>
+<p-confirmpopup />
+<p-dialog [header]="modalHeader | uppercase" (onHide)="hideModal(false)" draggable="false" [modal]="true"
+    [(visible)]="modalVisible" [style]="{ minWidth: '25rem',minHeight:'50vh'}">
+    <add-rayon *ngIf="modalHeader === modals.addRayon" (hideModalEvent)="hideModal(true)" [rayonId]="newRayonId"
+        [store]="store"></add-rayon>
+    <add-product *ngIf="modalHeader === modals.addProduct" (hideModalEvent)="hideModal(true)"></add-product>
+    <edit-product *ngIf="modalHeader === modals.editProduct" (hideModalEvent)="hideModal(true)"></edit-product>
+</p-dialog>
