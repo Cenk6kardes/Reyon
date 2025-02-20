@@ -6,29 +6,36 @@
         </p-floatlabel>
 
         <p-floatlabel class="w-full">
-            <input pInputText id="title" formControlName="title" autocomplete="off" class="w-full " />
+            <input [ngClass]="{'p-invalid':form.get('title')?.invalid && form.get('title')?.dirty}" pInputText
+                id="title" formControlName="title" autocomplete="off" class="w-full" />
             <label for="title">Ürün Adı</label>
         </p-floatlabel>
 
         <p-floatlabel class="w-full">
-            <p-select formControlName="rType" appendTo="body" [options]="" class="w-full " />
+            <p-select formControlName="rType" appendTo="body" [options]="category" class="w-full " />
             <label for="rType">Bulunduğu Reyon Türü</label>
         </p-floatlabel>
 
+
         <p-floatlabel class="w-full">
-            <p-select formControlName="moveStore" appendTo="body" [options]="" class="w-full " />
+            <p-select [ngClass]="{'p-invalid':form.get('moveStore')?.invalid && form.get('moveStore')?.dirty}"
+                [showClear]="true" formControlName="moveStore" appendTo="body" [options]="stores" optionLabel="title"
+                optionValue="id" class="w-full" (onChange)="storeSelectedCheckRayons($event.value)" />
             <label for="moveStore">Taşınacak Depoyu Seçiniz.</label>
         </p-floatlabel>
 
         <p-floatlabel class="w-full">
-            <p-select formControlName="moveRayon" appendTo="body" [options]="" class="w-full " />
+            <p-select [ngClass]="{'p-invalid':form.get('moveRayon')?.invalid && form.get('moveRayon')?.dirty}"
+                [showClear]="true" formControlName="moveRayon" appendTo="body" [options]="rayons" class="w-full"
+                (onChange)="rayonSelected()" />
             <label for="moveRayon">Taşınacak Reyonu Seçiniz</label>
         </p-floatlabel>
 
 
 
-        <button pButton type="submit" label="Kaydet" class="w-full p-button-success mt-3" (click)="submit()"></button>
-        <button pButton label="Ürünü Sil" class="w-full p-button-danger "></button>
+        <button pButton [disabled]="form.invalid" type="submit" label="Kaydet" class="w-full p-button-success mt-3"
+            (click)="submit()"></button>
+        <button pButton label="Ürünü Sil" class="w-full p-button-danger" (click)="removeProduct()"></button>
 
     </div>
 </form>

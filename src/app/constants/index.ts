@@ -6,6 +6,14 @@ export enum Category {
   Elektronik,
 }
 
+export const category = [
+  { label: Category[0], value: Category.Gıda },
+  { label: Category[1], value: Category.Temizlik },
+  { label: Category[2], value: Category.Kırtasiye },
+  { label: Category[3], value: Category.Kozmetik },
+  { label: Category[4], value: Category.Elektronik },
+];
+
 export const Modals = {
   addRayon: 'Reyon Ekle',
   addProduct: 'Ürün Ekle',

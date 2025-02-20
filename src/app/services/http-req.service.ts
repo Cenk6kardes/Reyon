@@ -1,35 +1,86 @@
-import { HttpClient } from '@angular/common/http';
 import { Injectable, signal } from '@angular/core';
-import {
-  BehaviorSubject,
-  debounceTime,
-  distinctUntilChanged,
-  Observable,
-} from 'rxjs';
+import { BehaviorSubject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { IProduct, IRayon, IStore } from '../types';
 
 @Injectable({
   providedIn: 'root',
 })
 export class HttpReqService {
-  constructor(private http: HttpClient) {}
-  addProductData = signal<{
+  constructor() {}
+
+  data = signal<IStore[]>([
+    {
+      id: 0,
+      title: 'Depo A',
+      rayon: [
+        {
+          id: 0,
+          type: 2,
+          storeId: 0,
+          products: [
+            {
+              id: 0,
+              productId: '123123',
+              rayonId: 0,
+              title: 'Makarna',
+              rType: 2,
+            },
+          ],
+        },
+      ],
+    },
+    {
+      id: 1,
+      title: 'Depo B',
+      rayon: [
+        {
+          id: 0,
+          type: 1,
+          storeId: 1,
+          products: [
+            {
+              id: 0,
+              productId: '44A',
+              rayonId: 0,
+              title: 'Bez',
+              rType: 1,
+            },
+          ],
+        },
+      ],
+    },
+  ]);
+
+  productInfo = signal<{
     storeId: number;
     rayonId: number;
     id: number;
     rType: number;
+    productId: string;
+    productName: string;
   }>({
     storeId: -1,
     rayonId: -1,
     id: -1,
     rType: -1,
+    productId: '',
+    productName: '',
   });
 
-  editProductData = signal<any>({
-    rType: -1,
-    title: '',
-    productId: '',
-  });
+  updateProductInfo(product: {
+    storeId: number;
+    rayonId: number;
+    rType: number;
+    id: number;
+    productId: string;
+    productName: string;
+  }) {
+    this.productInfo.set(product);
+  }
+
+  setData(newData: IStore[]) {
+    this.data.set(newData);
+  }
 
   private searchSubject = new BehaviorSubject<string>('');
   search$ = this.searchSubject
@@ -40,42 +91,85 @@ export class HttpReqService {
     this.searchSubject.next(term);
   }
 
-  updateAddProductData(product: {
-    storeId: number;
-    rayonId: number;
-    rType: number;
-    id: number;
-  }) {
-    this.addProductData.set(product);
-  }
-
-  updateEditProductData(product: any) {
-    this.editProductData.set(product);
-  }
-
-  getDatas(): Observable<IStore[]> {
-    return this.http.get<IStore[]>(
-      'https://reyon-d43cc-default-rtdb.europe-west1.firebasedatabase.app/stores.json'
+  addRayon(rayon: IRayon, storeId: number) {
+    this.data.update((stores) =>
+      stores.map((store) =>
+        store.id === storeId
+          ? {
+              ...store,
+              rayon: [...(store.rayon ?? []), rayon].sort(
+                (a, b) => a.id - b.id
+              ),
+            }
+          : store
+      )
     );
   }
 
-  createRayon(storeId: number, body: IRayon, title: number) {
-    return this.http.put(
-      `https://reyon-d43cc-default-rtdb.europe-west1.firebasedatabase.app/stores/${storeId}/rayon/${title}.json`,
-      body
+  removeRayon(rayonId: number, storeId: number) {
+    this.data.update((stores) =>
+      stores.map((store) =>
+        store.id === storeId
+          ? {
+              ...store,
+              rayon: store.rayon?.filter((rayon) => rayon.id !== rayonId) ?? [],
+            }
+          : store
+      )
     );
   }
 
-  deleteRayon(storeId: number, rayonId: number) {
-    return this.http.delete(
-      `https://reyon-d43cc-default-rtdb.europe-west1.firebasedatabase.app/stores/${storeId}/rayon/${rayonId}.json`
+  addProduct(storeId: number, rayonId: number, newProduct: IProduct) {
+    this.data.update((stores) =>
+      stores.map((store) =>
+        store.id === storeId
+          ? {
+              ...store,
+              rayon: (store.rayon ?? []).map((rayon) =>
+                rayon.id === rayonId
+                  ? {
+                      ...rayon,
+                      products: [...(rayon.products ?? []), newProduct].sort(
+                        (a, b) => a.id - b.id
+                      ),
+                    }
+                  : rayon
+              ),
+            }
+          : store
+      )
     );
   }
 
-  createProduct(storeId: number, body: IProduct, rayonId: number, id: number) {
-    return this.http.put(
-      `https://reyon-d43cc-default-rtdb.europe-west1.firebasedatabase.app/stores/${storeId}/rayon/${rayonId}/products/${id}.json`,
-      body
+  removeProduct(id: number, storeId: number, rayonId: number) {
+    this.data.update((stores) =>
+      stores.map((store) =>
+        store.id === storeId
+          ? {
+              ...store,
+              rayon: store.rayon?.map((rayon) =>
+                rayon.id === rayonId
+                  ? {
+                      ...rayon,
+                      products: (rayon.products ?? []).filter(
+                        (product) => product.id !== id
+                      ),
+                    }
+                  : rayon
+              ),
+            }
+          : store
+      )
     );
+  }
+
+  checkRayons(storeId: number, rayonType: number) {
+    return this.data()
+      .filter((store) => store.id === storeId)
+      .flatMap(
+        (store) =>
+          store.rayon?.filter((rayon) => rayon.type === rayonType) ?? []
+      )
+      .map(({ id }) => ({ label: `R${id + 1}`, value: id }));
   }
 }

@@ -22,8 +22,7 @@ import { AddRayonComponent } from '../add-rayon/add-rayon.component';
 import { EditProductComponent } from '../edit-product/edit-product.component';
 import { ConfirmPopupModule } from 'primeng/confirmpopup';
 import { ConfirmationService } from 'primeng/api';
-import { ToastService } from '../../services/toast.service';
-import { Subject, takeUntil } from 'rxjs';
+import { Subject } from 'rxjs';
 import { HttpReqService } from '../../services/http-req.service';
 import { getNextNumber } from '../../constants';
 
@@ -52,7 +51,6 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
   private unsubscribe$ = new Subject<void>();
 
   private confirmationService = inject(ConfirmationService);
-  private toastService = inject(ToastService);
   private httpService = inject(HttpReqService);
   productTypes = Category;
   modals = Modals;
@@ -64,11 +62,7 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
   modalVisible = false;
   modalHeader = '';
 
-  ngOnInit(): void {
-    this.httpService.search$.subscribe((res) => {
-      this.dt.filterGlobal(res, 'contains');
-    });
-  }
+  ngOnInit(): void {}
 
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['store'] && changes['store'].currentValue.rayon) {
@@ -106,27 +100,9 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
         label: 'Evet',
       },
       accept: () => {
-        this.httpService
-          .deleteRayon(this.store.id, rayonId)
-          .pipe(takeUntil(this.unsubscribe$))
-          .subscribe({
-            next: () => {
-              this.hideModal(true);
-              this.toastService.show(
-                'Başarılı',
-                `R${rayonId + 1} Başarıyla Silindi`,
-                'success'
-              );
-            },
-            error: (err) => {
-              this.toastService.show(
-                'HATA!',
-                `R${rayonId + 1} Silme işlemi Başarısız.`,
-                'danger'
-              );
-              console.log(err);
-            },
-          });
+        this.httpService.removeRayon(rayonId, this.store.id);
+
+        this.hideModal(true);
       },
     });
   }
@@ -135,21 +111,26 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
     this.modalHeader = this.modals.addProduct;
     this.modalVisible = true;
     const id = getNextNumber(rayon.products!);
-    this.httpService.updateAddProductData({
+    this.httpService.updateProductInfo({
       storeId: rayon.storeId,
       rayonId: rayon.id,
       rType: rayon.type,
       id,
+      productId: '',
+      productName: '',
     });
   }
 
   openEditProductModal(product: IProduct) {
     this.modalHeader = this.modals.editProduct;
     this.modalVisible = true;
-    this.httpService.updateEditProductData({
+    this.httpService.updateProductInfo({
+      storeId: this.store.id,
+      rayonId: product.rayonId,
       rType: product.rType,
-      title: product.title,
+      id: product.id,
       productId: product.productId,
+      productName: product.title,
     });
   }
 
@@ -160,6 +141,14 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
     this.modalVisible = false;
     this.modalHeader = '';
     this.newRayonId = -1;
+    this.httpService.updateProductInfo({
+      storeId: -1,
+      rayonId: -1,
+      rType: -1,
+      id: -1,
+      productId: '',
+      productName: '',
+    });
   }
 
   ngOnDestroy(): void {

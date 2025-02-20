@@ -12,14 +12,14 @@
         </div>
     </div>
 
-    <div *ngIf="stores$ | async  as stores;else emptyTable" class="flex flex-wrap justify-content-around">
+    <div *ngIf="stores as stores;else emptyTable" class="flex flex-wrap justify-content-around">
         <div *ngFor="let store of stores;let i = index">
-            <table #child [store]="store" (restoreDataEvent)="callAgain()"></table>
+            <table #child [store]="store" (restoreDataEvent)="getData()"></table>
         </div>
     </div>
     <ng-template #emptyTable>
         <div class="flex flex-wrap ">
-            <table [store]="{id:0,title:'Depo A'}" (restoreDataEvent)="callAgain()"></table>
+            <table [store]="{id:0,title:'Depo A'}" (restoreDataEvent)="getData()"></table>
         </div>
     </ng-template>
 </div>
