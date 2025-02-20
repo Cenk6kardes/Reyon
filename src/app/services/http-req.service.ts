@@ -1,13 +1,10 @@
 import { Injectable, signal } from '@angular/core';
-import { BehaviorSubject, debounceTime, distinctUntilChanged } from 'rxjs';
 import { IProduct, IRayon, IStore } from '../types';
 
 @Injectable({
   providedIn: 'root',
 })
 export class HttpReqService {
-  constructor() {}
-
   data = signal<IStore[]>([
     {
       id: 0,
@@ -80,15 +77,6 @@ export class HttpReqService {
 
   setData(newData: IStore[]) {
     this.data.set(newData);
-  }
-
-  private searchSubject = new BehaviorSubject<string>('');
-  search$ = this.searchSubject
-    .asObservable()
-    .pipe(debounceTime(500), distinctUntilChanged());
-
-  setSearchTerm(term: string) {
-    this.searchSubject.next(term);
   }
 
   addRayon(rayon: IRayon, storeId: number) {

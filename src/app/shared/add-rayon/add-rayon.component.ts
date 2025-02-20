@@ -11,7 +11,6 @@ import {
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { SharedImports } from '../sharedModule/shared-imports';
 import { HttpReqService } from '../../services/http-req.service';
-import { ToastService } from '../../services/toast.service';
 import { IStore } from '../../types';
 @Component({
   selector: 'add-rayon',
@@ -25,7 +24,6 @@ export class AddRayonComponent implements OnChanges {
   @Output() hideModalEvent = new EventEmitter();
 
   private httpService = inject(HttpReqService);
-  private toastService = inject(ToastService);
   category = category;
   form: FormGroup;
 

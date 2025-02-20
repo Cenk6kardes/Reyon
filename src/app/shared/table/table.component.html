@@ -1,6 +1,6 @@
 <p-panel [header]="head" class="px-3">
-    <p-table #dt datakey="id" [globalFilterFields]="['id','type','products']" [columns]="columns" [value]="rayon"
-        stripedRows showGridlines [tableStyle]="{ 'width':'52rem' }">
+    <p-table #dt datakey="id" [columns]="columns" [value]="filteredRayon" stripedRows showGridlines
+        [tableStyle]="{ 'width':'52rem' }">
         <ng-template #header let-columns>
             <tr>
                 <th *ngFor="let col of columns">

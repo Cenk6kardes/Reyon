@@ -4,8 +4,6 @@ import {
   inject,
   Input,
   OnChanges,
-  OnDestroy,
-  OnInit,
   Output,
   SimpleChanges,
   ViewChild,
@@ -42,8 +40,9 @@ import { getNextNumber } from '../../constants';
   templateUrl: './table.component.html',
   styleUrl: './table.component.css',
 })
-export class TableComponent implements OnInit, OnChanges, OnDestroy {
+export class TableComponent implements OnChanges {
   @Input() store!: IStore;
+  @Input() search!: string;
   @ViewChild('dt') dt!: Table;
   @ViewChild(AddProductComponent) addProductComponent!: AddProductComponent;
   @Output() restoreDataEvent = new EventEmitter<boolean>();
@@ -56,19 +55,35 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
   modals = Modals;
   head = '';
   rayon: IRayon[] = [];
+  filteredRayon: IRayon[] = [];
 
   newRayonId = -1;
 
   modalVisible = false;
   modalHeader = '';
 
-  ngOnInit(): void {}
-
   ngOnChanges(changes: SimpleChanges): void {
     if (changes['store'] && changes['store'].currentValue.rayon) {
       this.rayon = changes['store'].currentValue.rayon;
+      this.head = `${changes['store'].currentValue.title}`;
     }
-    this.head = `${changes['store'].currentValue.title}`;
+
+    if (changes['search']) {
+      const trimmedSearch = changes['search'].currentValue.trim().toLowerCase();
+      if (trimmedSearch) {
+        this.filteredRayon = this.rayon
+          .map((reyon) => ({
+            ...reyon,
+            products:
+              reyon.products?.filter((product) =>
+                product.title.toLowerCase().includes(trimmedSearch)
+              ) ?? [],
+          }))
+          .filter((reyon) => reyon.products.length > 0);
+      } else {
+        this.filteredRayon = [...this.rayon];
+      }
+    }
   }
 
   columns: Column[] = [
@@ -149,10 +164,5 @@ export class TableComponent implements OnInit, OnChanges, OnDestroy {
       productId: '',
       productName: '',
     });
-  }
-
-  ngOnDestroy(): void {
-    this.unsubscribe$.next();
-    this.unsubscribe$.complete();
   }
 }
